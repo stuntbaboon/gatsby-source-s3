@@ -7,6 +7,7 @@ const getAwsCredentials = () => {
   return {
     secretAccessKey: 'ha',
     accessKeyId: 'no',
+    region: 're',
   };
 };
 
@@ -70,6 +71,7 @@ test('it passes with environment variables configured', async () => {
   const vars = {
     AWS_ACCESS_KEY_ID: '1234',
     AWS_SECRET_ACCESS_KEY: 'hunter2',
+    AWS_REGION: 'region',
   };
   const reset = setEnvVars(vars);
 
@@ -82,6 +84,7 @@ test('it passes with environment variables configured', async () => {
       aws: {
         accessKeyId: vars.AWS_ACCESS_KEY_ID,
         secretAccessKey: vars.AWS_SECRET_ACCESS_KEY,
+        region: vars.AWS_REGION,
       },
     })
   );

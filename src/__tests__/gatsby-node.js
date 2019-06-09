@@ -2,6 +2,8 @@ jest.mock('aws-sdk');
 import { sourceNodes } from '../gatsby-node';
 import AWS from 'aws-sdk';
 
+console.error = jest.fn();
+
 let s3;
 beforeEach(() => {
   s3 = new AWS.S3();
@@ -12,16 +14,21 @@ const getGatsbyNodeAPIConfig = (spy = jest.fn()) => ({
   boundActionCreators: {
     createNode: spy,
   },
+  store: {
+    getState: jest.fn(),
+  },
   cache: {
     get: jest.fn(),
     set: jest.fn(),
   },
+  createNodeId: spy,
 });
 
 const getPluginOptions = () => ({
   aws: {
     accessKeyId: 'hunter2',
     secretAccessKey: 'hahayaright',
+    region: 'region',
   },
   buckets: ['photos.dustinschau.com'],
 });

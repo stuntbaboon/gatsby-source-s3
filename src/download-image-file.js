@@ -2,7 +2,7 @@ import { createRemoteFileNode } from 'gatsby-source-filesystem';
 
 export async function downloadImageFile(
   node,
-  { store, cache, createNode, touchNode }
+  { store, cache, httpHeaders, createNode, createNodeId, touchNode }
 ) {
   const clone = Object.assign({}, node);
   let imageNodeId;
@@ -19,9 +19,12 @@ export async function downloadImageFile(
     try {
       const imageNode = await createRemoteFileNode({
         url: clone.Url,
+        parentNodeId: clone.id,
         store,
         cache,
         createNode,
+        createNodeId,
+        httpHeaders,
       });
 
       if (imageNode) {
@@ -32,7 +35,9 @@ export async function downloadImageFile(
           LastModified: clone.LastModified,
         });
       }
-    } catch (e) {} // ignore
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   if (imageNodeId) {

@@ -22,8 +22,12 @@ plugins: [
       aws: {
         accessKeyId: 'youraccesskeyhere',
         secretAccessKey: 'hunter2',
+        region: 'region',
       },
       buckets: ['your-s3-bucket-name'],
+      headers: {
+        'header-name': 'header-value',
+      },
     },
   },
 ];

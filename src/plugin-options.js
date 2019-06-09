@@ -6,7 +6,7 @@ export const schema = yup.object().shape({
     .shape({
       accessKeyId: yup.string().required(),
       secretAccessKey: yup.string().required(),
-      region: yup.string(),
+      region: yup.string().required(),
     })
     .default(() => ({
       accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -14,4 +14,5 @@ export const schema = yup.object().shape({
       region: process.env.AWS_REGION,
     })),
   buckets: yup.array().required(),
+  headers: yup.object().default({}),
 });

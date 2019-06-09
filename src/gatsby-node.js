@@ -11,29 +11,32 @@ const createContentDigest = obj =>
     .digest('hex');
 
 const isImage = object => /\.(jpe?g|png|webp|tiff?)$/i.test(object);
-const getBucketName = () => {};
 
 export async function sourceNodes(
-  { boundActionCreators, store, cache },
+  { boundActionCreators, createNodeId, store, cache },
   pluginOptions
 ) {
   const { createNode, touchNode } = boundActionCreators;
 
-  const { aws: awsConfig, buckets: bucketsConfig } = await schema.validate(
-    pluginOptions
-  );
+  const {
+    aws: awsConfig,
+    buckets: bucketsConfig,
+    headers: httpHeaders,
+  } = await schema.validate(pluginOptions);
 
   const buckets = await listObjects(bucketsConfig, awsConfig);
 
   await Promise.all(
-    buckets.map(({ Contents, ...rest }, index) => {
+    buckets.map(({ Contents, ...rest }) => {
       return Promise.all(
         Contents.map(async content => {
           const { Key } = content;
           const node = {
             ...rest,
             ...content,
-            Url: `https://s3.amazonaws.com/${rest.Name}/${Key}`,
+            Url: `https://s3-${awsConfig.region}.amazonaws.com/${
+              rest.Name
+            }/${Key}`,
             id: `s3-${Key}`,
             children: [],
             parent: '__SOURCE__',
@@ -62,7 +65,9 @@ export async function sourceNodes(
               {
                 store,
                 cache,
+                httpHeaders,
                 createNode,
+                createNodeId,
                 touchNode,
               }
             );
