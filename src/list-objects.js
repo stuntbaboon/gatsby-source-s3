@@ -2,10 +2,9 @@ import AWS from 'aws-sdk';
 import omit from 'lodash.omit';
 
 /*
- * This is currently limited to 1000 objects by S3
- * if needed, NextContinuationToken can probably be used to get all
+ * Recursively lists all bucket objects using the returned NextContinuationToken
  */
-export const listObjects = (bucket, config = {}, maxKeys = 1000) => {
+export const listObjects = (bucket, config = {}, MaxKeys = 1000) => {
   AWS.config.update(config);
 
   const s3 = new AWS.S3();
@@ -14,21 +13,33 @@ export const listObjects = (bucket, config = {}, maxKeys = 1000) => {
 
   return Promise.all(
     buckets.map(bucket => {
-      return s3
-        .listObjectsV2({
-          MaxKeys: maxKeys,
-          ...(typeof bucket === 'string'
-            ? { Bucket: bucket }
-            : omit(bucket, 'Filter')),
-        })
-        .promise()
-        .then(content => {
-          if (bucket.Filter) {
-            content.Contents = (content.Contents || []).filter(bucket.Filter);
-          }
+      const listContents = (
+        Bucket,
+        ContinuationToken = null,
+        allContents = []
+      ) =>
+        s3
+          .listObjectsV2({
+            MaxKeys,
+            ContinuationToken,
+            ...(typeof Bucket === 'string'
+              ? { Bucket }
+              : omit(Bucket, 'Filter')),
+          })
+          .promise()
+          .then(content => {
+            if (Bucket.Filter) {
+              content.Contents = (content.Contents || []).filter(Bucket.Filter);
+            }
 
-          return content;
-        });
+            const Contents = allContents.concat(content.Contents);
+
+            return content.NextContinuationToken
+              ? listContents(bucket, content.NextContinuationToken, Contents)
+              : { ...content, Contents, KeyCount: Contents.length };
+          });
+
+      return listContents(bucket);
     })
   );
 };
