@@ -9,3 +9,6 @@ node_modules
 # secrets
 .env
 .npmrc
+
+# coverage reports
+coverage
